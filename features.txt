@@ -1,0 +1,19 @@
+Things to do 
+
+There are 2 broad categories:
+Charges and Balance. 
+
+1) Implement Balance fully.
+With balance we want to combine (savings + checking - charges since last payment)
+    a. Implement a date to int function so we can see most recent.
+    
+DONEEEEEEEEEE
+
+
+2) Implement Charges Fully.
+
+    a. Need classifications for rent / cable / car_insurance as subclass
+
+3) Change "classification" to something shorter.
+
+

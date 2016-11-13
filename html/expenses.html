@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+    <link rel="stylesheet" type="text/css" href="css/unentered_table.css">
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+    <script type="text/javascript">
+        // [Date][Description][Amount]
+        // Returns an html table_header object.
+        var create_header = function() {
+            var categories = ["Date", "Description", "Amount", "Type"];
+            var header = document.createElement('thead');
+            var table_head = document.createElement('tr'); // Creating the row
+
+            for (i = 0; i < categories.length; i++) {
+                var curr_cell = document.createElement('td');
+                curr_cell.innerHTML= "<b>" + categories[i] + "</b>";
+                curr_cell.style.color= "rgb(0,109,176)";
+                table_head.appendChild(curr_cell);   
+            }
+            header.appendChild(table_head);
+            
+            return header;
+        }
+        
+        // Return html text cell for placement in a row.
+        var text_cell = function(text) {
+            var text_cell = document.createElement('td');
+            text_cell.innerHTML = text;
+            
+            return text_cell;
+        }
+        
+        var amt_text_cell = function(amt) {
+            var amt_cell = document.createElement('td');
+            amt_cell.innerHTML = amt;
+            amt_cell.style.textAlign = "center";
+            if (Math.floor(amt) < 0) {
+                amt_cell.style.color = "rgb(128, 0, 0)";
+            }   else {
+                amt_cell.style.color = "rgb(0, 128, 0)";
+            }
+            return amt_cell;
+        }
+        
+        var send_txn = function(txn_json) {
+            // console.log(txn_json);
+
+            $.ajax({
+                type: "POST",
+                url: "/expenses",
+                dataType: "text",
+                data: txn_json,
+                success: function (data) {
+                    // For now don't go anywhere if it works.
+                    // Should really remove row and redraw table.
+                    // window.location.replace("/expenses");
+                    console.log('Success');
+                },
+                error: function (xhr, status, error) {
+                    console.log(xhr.responseText);
+                    // alert(error);
+                    // window.location.replace("/");
+                }
+            });
+        }
+        
+        // Make the classif button. classif is a param.
+        var ctype_button = function(txn, txn_type) {
+            var btn = document.createElement("BUTTON"); // Create a <button> element
+            
+            txn['txn_type'] = txn_type;
+            txn_json = JSON.stringify(txn);
+            
+            btn.innerHTML=txn_type;
+            btn.id = txn_type;
+            btn.value = txn_json;
+            
+            // When the button is clicked, send the dict to be put.
+            btn.onclick = function() { send_txn(this.value); }
+            
+            return btn;
+        }
+        
+        // Cell with buttons to select charge type.
+        var ctype_cell = function(date, desc, amt) {
+            var ctype_cell = document.createElement('td');
+            txn = {}
+            txn['date'] = date;
+            txn['desc'] = desc;
+            txn['amt'] = amt;
+            
+            ctype_cell.appendChild(ctype_button(txn, 'Essential'));
+            ctype_cell.appendChild(ctype_button(txn, 'Food'));
+            ctype_cell.appendChild(ctype_button(txn, 'Fun'));
+            ctype_cell.appendChild(ctype_button(txn, 'Income'));
+            ctype_cell.appendChild(ctype_button(txn, 'Transfer'));
+            ctype_cell.appendChild(ctype_button(txn, 'Other'));
+            
+            return ctype_cell;
+        }
+        
+        // Return html row for placement in a table.
+        var create_row = function(date, desc, amt) {
+            var row = document.createElement('tr');
+            row.appendChild(text_cell(date));
+            row.appendChild(text_cell(desc));
+            row.appendChild(amt_text_cell(amt));
+            row.appendChild(ctype_cell(date, desc, amt));
+            
+            return row; 
+        }
+
+        var txn_table = function(json_txn_list) {
+            var tbl = document.createElement('table');
+            tbl.id='theTable';
+            tbl.setAttribute('border', '1');
+            tbl.cellPadding = "3";
+            tbl.cellSpacing = "3";
+            tbl.appendChild(create_header());
+          
+            var txn_list = json_txn_list.txns;
+            for (txn in txn_list) { //[{Dtls,Desc,Amt},{Dtls,Desc,Amt}]
+                tbl.appendChild(
+                    create_row(txn_list[txn].date, txn_list[txn].description, 
+                    txn_list[txn].amount));
+            }
+          
+            return tbl;
+        }
+        window.onload = function() {
+            var entered = {{entered|safe}};
+            var unentered = {{unentered|safe}};
+
+            document.body.appendChild(txn_table(unentered));
+        }
+    </script>
+</head>
+</html>

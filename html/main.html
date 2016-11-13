@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+
+    <script type="text/javascript">
+        // [Date][Description][Amount]
+        // Returns an html table_header object.
+        var create_header = function() {
+            var categories = ["Date", "Description", "Amount"];
+            var header = document.createElement('thead');
+            var table_head = document.createElement('tr'); // Creating the row
+          
+            for (i = 0; i < categories.length; i++) {
+                var curr_cell = document.createElement('td');
+                curr_cell.innerHTML= "<b>" + categories[i] + "</b>";
+                curr_cell.style.color= "red";
+                table_head.appendChild(curr_cell);   
+            }
+            header.appendChild(table_head);
+            
+            return header;
+        }
+        
+        // Return html text cell for placement in a row.
+        var text_cell = function(text) {
+            var text_cell = document.createElement('td');
+            text_cell.innerHTML = text;
+            return text_cell;
+        }
+        
+        // Return html row for placement in a table.
+        var create_row = function(details, desc, amt) {
+            var row = document.createElement('tr');
+            row.appendChild(text_cell(details));
+            row.appendChild(text_cell(desc));
+            row.appendChild(text_cell(amt));
+            return row; 
+        }
+
+        var txn_table = function(json_txn_list) {
+            var tbl = document.createElement('table');
+            tbl.style.width='100%';
+            tbl.setAttribute('border', '1');
+            tbl.cellPadding = "3";
+            tbl.cellSpacing = "3";
+            tbl.appendChild(create_header());
+          
+            var txn_list = json_txn_list.txns;
+            for (txn in txn_list) { //[{Dtls,Desc,Amt},{Dtls,Desc,Amt}]
+                tbl.appendChild(
+                    create_row(txn_list[txn].date, txn_list[txn].description, 
+                    txn_list[txn].amount));
+            }
+          
+            return tbl;
+        }
+        
+        var date_to_string = function(date) {
+            var str = "";
+            str = String((Math.floor(date / 100)) % 100);
+            str += "/";
+            str += String(date % 100);
+            str += "/";
+            str += String(Math.floor(date / 10000));
+            return str;
+        }
+        
+        // There could be n transactions on the same day. We just want the last.
+        var get_final_txn_at_date = function(arr, i, len, acc) {
+            start_date = arr[i].date;
+            while ((i + 1) < len) {
+                if (arr[i+1].date == start_date) {
+                    i++;
+                } else {
+                    break;
+                }
+            }
+            return i;
+        }
+        
+        var plot_balance = function(savings, checking, credit, start_date, 
+                                    end_date) {
+            var plot_div = document.createElement('div');
+            plot_div.id = 'plot_div';
+            document.body.appendChild(plot_div);
+            
+            // TODO turn these into a class.
+            x = [];
+            y = [];
+            data = [];
+            bar_graph = {};
+            
+            // TODO turn these into a class.
+            var c = 0;
+            var s = 0;
+            var curr_s_bal = 0;
+            var curr_c_bal = 0;
+            var s_date = savings[0].date;
+            var c_date = savings[0].date;
+            var slen = savings.length;
+            var clen = checking.length;
+            
+            while (c < clen || s < slen) {
+                while ((c < clen && (c_date <= s_date)) || 
+                (s == slen && c < clen)) {
+                    // Advance to end of day.
+                    c = get_final_txn_at_date(checking, c, clen, 'c');
+                    
+                    // If savings date is the same then advance that too.
+                    if (c_date == s_date && s < slen) {
+                        s = get_final_txn_at_date(savings, s, slen, 's');
+                        curr_s_bal = savings[s].balance;
+                    }
+                    
+                    x.push(date_to_string(c_date));
+                    y.push(Math.floor(checking[c].balance) + Math.floor(curr_s_bal));
+                    curr_c_bal = checking[c].balance;
+                    c_date = checking[c].date;
+                    c += 1;
+                }
+                
+                while ((s < slen && (s_date < c_date)) || 
+                (c == clen && s < slen)) {
+                    // Advance to end of that day.
+                    s = get_final_txn_at_date(savings, s, slen, 's');
+                    
+                    x.push(date_to_string(s_date));
+                    y.push(Math.floor(savings[s].balance) + Math.floor(curr_c_bal));
+                    curr_s_bal = savings[s].balance;
+                    s_date = savings[s].date;
+                    s += 1;
+                }
+            }
+            
+            bar_graph['x'] = x;
+            bar_graph['y'] = y;
+            bar_graph['type'] = 'bar';
+            data.push(bar_graph);
+            var layout = {
+                title: 'Balance'
+            };
+            Plotly.newPlot('plot_div', data, layout);
+        }
+    
+        window.onload = function() {
+            var savings = {{savings|safe}};
+            var checking = {{checking|safe}};
+            var credit = {{credit|safe}};
+            var start_date = 0;
+            var end_date = 0;
+            plot_balance(savings.txns, checking.txns, credit.txns, start_date, 
+                         end_date);
+            document.body.appendChild(txn_table(savings));
+            document.body.appendChild(txn_table(checking));
+            document.body.appendChild(txn_table(credit));
+        }
+    </script>
+</head>
+</html>
