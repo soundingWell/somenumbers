@@ -2,7 +2,7 @@
   font: 100% sans-serif;
   background-color: white
   border-collapse: separate;
-  /*table-layout: fixed;*/
+  table-layout: fixed;
   border: 1px solid rgb(197,199,207);  /* Grey */
   width: 100%
 }

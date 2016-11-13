@@ -3,13 +3,56 @@
 <html>
 <head>
     <link rel="stylesheet" type="text/css" href="css/unentered_table.css">
-    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     <script type="text/javascript">
-        // [Date][Description][Amount]
+    
+        var pie_chart = function(txn_list) {
+            var plot_div = document.createElement('div');
+            plot_div.id = 'plot_div';
+            document.body.appendChild(plot_div);
+        
+            data = [];
+            pie_graph = {};
+            
+            labels = ["Essential", "Food", "Fun"];
+            values = [0, 0, 0];
+            
+            // Loop through txns and pie chart main expense types.
+            for (txn in txn_list) {
+                txn_type = txn_list[txn].txn_type;
+                amt = txn_list[txn].amount;
+
+                // Match txn_type to label.
+                label_index = labels.indexOf(txn_type);
+                console.log('index: ' + label_index);
+                console.log('amt: ' + amt);
+                if (label_index != -1) {
+                    values[label_index] += Math.floor(amt) * -1;
+                }
+            }
+            
+            pie_graph['values'] = values;
+            pie_graph['labels'] = labels;
+            pie_graph['type'] = 'pie';
+            data.push(pie_graph);
+            
+            console.log('label_len ' + labels.length);
+            console.log('values_len ' + values.length);
+            
+            var layout = {
+                title: 'Expenses By Type',
+                height: 400,
+                width: 500,
+            };
+            
+            Plotly.newPlot('plot_div', data, layout);
+        }
+
+         // [Date][Description][Amount]
         // Returns an html table_header object.
         var create_header = function() {
-            var categories = ["Date", "Description", "Amount", "Type"];
+            var categories = ["Date", "Description", "Amount", "Current Type", "Type"];
             var header = document.createElement('thead');
             var table_head = document.createElement('tr'); // Creating the row
 
@@ -49,7 +92,7 @@
 
             $.ajax({
                 type: "POST",
-                url: "/expenses",
+                url: "/mod_expenses",
                 dataType: "text",
                 data: txn_json,
                 success: function (data) {
@@ -98,43 +141,50 @@
             ctype_cell.appendChild(ctype_button(txn, 'Income'));
             ctype_cell.appendChild(ctype_button(txn, 'Transfer'));
             ctype_cell.appendChild(ctype_button(txn, 'Other'));
+            ctype_cell.appendChild(ctype_button(txn, 'Remove'));
             
             return ctype_cell;
         }
         
         // Return html row for placement in a table.
-        var create_row = function(date, desc, amt) {
+        var create_row = function(date, desc, amt, txn_type) {
             var row = document.createElement('tr');
             row.appendChild(text_cell(date));
             row.appendChild(text_cell(desc));
             row.appendChild(amt_text_cell(amt));
+            row.appendChild(text_cell(txn_type));
             row.appendChild(ctype_cell(date, desc, amt));
             
             return row; 
         }
 
-        var txn_table = function(json_txn_list) {
+        var txn_table = function(txn_list) {
             var tbl = document.createElement('table');
             tbl.id='theTable';
             tbl.setAttribute('border', '1');
             tbl.cellPadding = "3";
             tbl.cellSpacing = "3";
             tbl.appendChild(create_header());
-          
-            var txn_list = json_txn_list.txns;
+
             for (txn in txn_list) { //[{Dtls,Desc,Amt},{Dtls,Desc,Amt}]
                 tbl.appendChild(
                     create_row(txn_list[txn].date, txn_list[txn].desc, 
-                    txn_list[txn].amount));
+                    txn_list[txn].amount, txn_list[txn].txn_type));
             }
           
             return tbl;
         }
-        window.onload = function() {
-            var entered = {{entered|safe}};
-            var unentered = {{unentered|safe}};
 
-            document.body.appendChild(txn_table(unentered));
+        window.onload = function() {
+            var json_txn_list = {{db_txns|safe}};
+            var length = {{length|safe}};
+            
+            var txn_list = json_txn_list.txns;
+            
+            console.log('length: ' + length);
+            pie_chart(txn_list);
+            document.body.appendChild(txn_table(txn_list));
+            
         }
     </script>
 </head>

@@ -13,6 +13,7 @@ sys.path.append('python/')
 
 ### Mine ###
 from transaction_db import TransactionDB
+from transaction_db import make_key
 import transaction_list
 
 
@@ -28,58 +29,12 @@ def get_txn_lists():
 
     return savings_txn_list, checking_txn_list, credit_txn_list
 
-# Displays pie charts of expenses and allows user to type charges.
+# Displays pie charts of expenses..
 class ExpensesHandler(webapp.RequestHandler):
-    
-    # User chose a class for a txn. Enter it into the db
-    def post(self):
-        txn_json = self.request.body
-        json_py = json.loads(txn_json)
-
-        txn = TransactionDB(date=int(json_py['date']), 
-                            desc=str(json_py['desc']), 
-                            amt=int(json_py['amt']), 
-                            txn_type=str(json_py['txn_type']))
         
-        txn_key = str(json_py['date']) + str(json_py['amt'])
-        txn.key = ndb.Key(TransactionDB, txn_key)
-        txn.put()
-        
-    # Read csv, check that against db. Send 2 lists: 
-    # 1. txns already entered (to be used for the chart)
-    # 2. txns not yet entered / txns with no class (prompt user to enter).
-    def get(self):
-        savings_txn_list, checking_txn_list, credit_txn_list = get_txn_lists()
-        
-        serialized_entered = checking_txn_list.toJSON()
-        serialized_unentered = savings_txn_list.toJSON()
-        
-        template_values = {
-            'entered': serialized_entered,
-            'unentered': serialized_unentered,
-        }
-        
-        path = 'html/expenses.html'
-        self.response.out.write(template.render(path, template_values)) 
-       
-
-class ModExpensesHandler(webapp.RequestHandler):
-    
-    # User chose a type for a txn. Enter it into the db.
-    # If that type = 'Remove', remove the txn from the db.
-    def post(self):
-        txn_json = self.request.body
-        json_py = json.loads(txn_json)
-        
-        txn = TransactionDB(json_py['date'], json_py['desc'], json_py['amt'],  
-                            json_py['classification'], 
-                            json_py['date'] + json_py['amt'])
-        txn.put()
-        
-    # Read db, send list of entries in the db. Allow user to change txn_type
+    # Send list of entered txns.
     def get(self):
         db_txns = TransactionDB.query()
-        
         txn_list = transaction_list.TransactionList()
         for db_txn in db_txns:
             if db_txn.txn_type is not '':
@@ -90,11 +45,70 @@ class ModExpensesHandler(webapp.RequestHandler):
                                                                   txn_type=db_txn.txn_type))
         
         template_values = {
-            'db_txns': txn_list.toJSON()
+            'db_txns': txn_list.toJSON(),
+            'length': json.dumps(len(txn_list.txns))
         }
+        
+        path = 'html/expenses.html'
+        self.response.out.write(template.render(path, template_values)) 
+       
+
+class ModExpensesHandler(webapp.RequestHandler):
+    # User chose a type for a txn. Enter it into the db.
+    # If that type = 'Remove', remove the txn from the db.
+    def post(self):
+        txn_json = self.request.body
+        json_py = json.loads(txn_json)
+        
+        txn_db = TransactionDB(date=int(json_py['date']), 
+                               desc=str(json_py['desc']), 
+                               amt=int(json_py['amt']),  
+                               txn_type=str(json_py['txn_type']))
+        
+        txn_key = make_key(json_py['date'], json_py['desc'], json_py['amt'])
+        txn_db.key = ndb.Key(TransactionDB, txn_key)
+        txn_db.put()
+            
+        
+    # Read db, send list of entries in the db. Allow user to change txn_type
+    def get(self):
+        savings_txn_list, checking_txn_list, credit_txn_list = get_txn_lists()
+        self.check_db(savings_txn_list)
+        self.check_db(checking_txn_list)
+        self.check_db(credit_txn_list)
+        
+        '''
+        db_txns = TransactionDB.query()
+        
+        txn_list = transaction_list.TransactionList()
+        for db_txn in db_txns:
+            if db_txn.txn_type is not '':
+                txn_list.txns.append(transaction_list.Transaction(date=db_txn.date,
+                                                                  desc=db_txn.desc,
+                                                                  amount=db_txn.amt,
+                                                                  balance=0,
+                                                                  txn_type=db_txn.txn_type))
+        '''
+        
+        template_values = {
+            'savings': savings_txn_list.toJSON(),
+            'checking': checking_txn_list.toJSON(),
+            'credit': credit_txn_list.toJSON()
+        }   
         
         path = 'html/mod_expenses.html'
         self.response.out.write(template.render(path, template_values)) 
+            
+    # Check each entry of txn_list against db. Fill in txn_type when needed.
+    def check_db(self, txn_list):
+        for txn in txn_list.txns:
+            key_str = make_key(txn.date, txn.desc, txn.amount)
+            db_txn_key = ndb.Key(TransactionDB, key_str)
+            db_txn = db_txn_key.get()
+            if db_txn:
+                print 'Found txn ' + key_str
+                txn.txn_type = db_txn.txn_type
+            
 
 class MainPage(webapp.RequestHandler):
     
