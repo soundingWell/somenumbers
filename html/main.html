@@ -50,7 +50,7 @@
             var txn_list = json_txn_list.txns;
             for (txn in txn_list) { //[{Dtls,Desc,Amt},{Dtls,Desc,Amt}]
                 tbl.appendChild(
-                    create_row(txn_list[txn].date, txn_list[txn].description, 
+                    create_row(txn_list[txn].date, txn_list[txn].desc, 
                     txn_list[txn].amount));
             }
           

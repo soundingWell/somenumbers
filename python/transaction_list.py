@@ -9,8 +9,6 @@ DESC = 3
 AMT = 4
 BALANCE = 5
 
-
-
 # "10/31/2016" -> 20161031
 # This is better for data. You can then compare dates sequetially.
 def date_to_int(date_str):
@@ -19,9 +17,9 @@ def date_to_int(date_str):
     return int(year_first_date)
 
 class Transaction: 
-    def __init__(self, date=0, description='', amount=0, balance=0, txn_type=''):
+    def __init__(self, date=0, desc='', amount=0, balance=0, txn_type=''):
         self.date = date
-        self.description = description
+        self.desc = desc
         self.amount = amount
         self.balance = balance
         self.txn_type = txn_type
@@ -30,10 +28,16 @@ class Transaction:
         print self.date + ', ' + self.description + ', ' + self.amount
 
 class TransactionList(object):   
+    
+    def __init__(self):
+        self.total = 0
+        self.txns = []
+        
+    def init_from_tl(self, tl):
+        self.txns=tl
+    
     # tlr = transaction_list_raw
-    def __init__(self, tlr):
-        self.charge_total= 1000
-        self.credit_total= 0
+    def init_from_tlr(self, tlr):
         self.total= 0
         self.txns = []
         
@@ -59,11 +63,11 @@ class TransactionList(object):
             # Credit has no balance.
             if credit:
                 self.txns.insert(0, Transaction(date=date_to_int(charge[DATE]), 
-                                                description=charge[DESC], 
+                                                desc=charge[DESC], 
                                                 amount=amount))
             else:
                 self.txns.insert(0, Transaction(date=date_to_int(charge[DATE]), 
-                                                description=charge[DESC], 
+                                                desc=charge[DESC], 
                                                 amount=amount,
                                                 balance=charge[BALANCE]))
             self.total += amount
@@ -97,6 +101,7 @@ def txn_list_from_csv(csv_file):
             transaction_list_raw.append(row)
 
     read_first_line(transaction_list_raw)
-    
-    return TransactionList(transaction_list_raw)          
+    txn_list = TransactionList()
+    txn_list.init_from_tlr(transaction_list_raw)
+    return txn_list       
     
