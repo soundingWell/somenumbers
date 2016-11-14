@@ -17,7 +17,7 @@
             
             labels = ["Essential", "Food", "Fun"];
             values = [0, 0, 0];
-            
+
             // Loop through txns and pie chart main expense types.
             for (txn in txn_list) {
                 txn_type = txn_list[txn].txn_type;
@@ -28,7 +28,7 @@
                 console.log('index: ' + label_index);
                 console.log('amt: ' + amt);
                 if (label_index != -1) {
-                    values[label_index] += Math.floor(amt) * -1;
+                    values[label_index] += parseFloat(amt) * -1;
                 }
             }
             
@@ -49,7 +49,6 @@
             Plotly.newPlot('plot_div', data, layout);
         }
 
-         // [Date][Description][Amount]
         // Returns an html table_header object.
         var create_header = function() {
             var categories = ["Date", "Description", "Amount", "Current Type", "Type"];
@@ -79,7 +78,7 @@
             var amt_cell = document.createElement('td');
             amt_cell.innerHTML = amt;
             amt_cell.style.textAlign = "center";
-            if (Math.floor(amt) < 0) {
+            if (parseFloat(amt) < 0) {
                 amt_cell.style.color = "rgb(128, 0, 0)";
             }   else {
                 amt_cell.style.color = "rgb(0, 128, 0)";
@@ -88,8 +87,6 @@
         }
         
         var send_txn = function(txn_json) {
-            // console.log(txn_json);
-
             $.ajax({
                 type: "POST",
                 url: "/mod_expenses",
@@ -166,7 +163,7 @@
             tbl.cellSpacing = "3";
             tbl.appendChild(create_header());
 
-            for (txn in txn_list) { //[{Dtls,Desc,Amt},{Dtls,Desc,Amt}]
+            for (txn in txn_list) {
                 tbl.appendChild(
                     create_row(txn_list[txn].date, txn_list[txn].desc, 
                     txn_list[txn].amount, txn_list[txn].txn_type));
@@ -184,7 +181,6 @@
             console.log('length: ' + length);
             pie_chart(txn_list);
             document.body.appendChild(txn_table(txn_list));
-            
         }
     </script>
 </head>

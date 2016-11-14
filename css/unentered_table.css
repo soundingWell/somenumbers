@@ -4,7 +4,8 @@
   border-collapse: separate;
   table-layout: fixed;
   border: 1px solid rgb(197,199,207);  /* Grey */
-  width: 100%
+  width: 100%;
+  text-align: center;
 }
 
 #theTable button {
