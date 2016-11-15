@@ -6,12 +6,15 @@ threadsafe: false
 
 handlers:
 
+- url: /css
+  static_dir: css
+
+- url: /js
+  static_dir: js
+
 - url: /statements
   static_dir: statements
   application_readable: true
-
-- url: /css
-  static_dir: css
 
 - url: /.*
   script: python/main.py

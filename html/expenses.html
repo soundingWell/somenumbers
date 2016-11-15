@@ -5,6 +5,14 @@
     <link rel="stylesheet" type="text/css" href="css/unentered_table.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <script src="js/table_helper.js"></script>
+    <script>
+    $( function() {
+        $( "#datepicker" ).datepicker();
+    } );
+    </script>
     <script type="text/javascript">
     
         var pie_chart = function(txn_list) {
@@ -25,8 +33,6 @@
 
                 // Match txn_type to label.
                 label_index = labels.indexOf(txn_type);
-                console.log('index: ' + label_index);
-                console.log('amt: ' + amt);
                 if (label_index != -1) {
                     values[label_index] += parseFloat(amt) * -1;
                 }
@@ -37,9 +43,6 @@
             pie_graph['type'] = 'pie';
             data.push(pie_graph);
             
-            console.log('label_len ' + labels.length);
-            console.log('values_len ' + values.length);
-            
             var layout = {
                 title: 'Expenses By Type',
                 height: 400,
@@ -48,139 +51,84 @@
             
             Plotly.newPlot('plot_div', data, layout);
         }
-
-        // Returns an html table_header object.
-        var create_header = function() {
-            var categories = ["Date", "Description", "Amount", "Current Type", "Type"];
-            var header = document.createElement('thead');
-            var table_head = document.createElement('tr'); // Creating the row
-
-            for (i = 0; i < categories.length; i++) {
-                var curr_cell = document.createElement('td');
-                curr_cell.innerHTML= "<b>" + categories[i] + "</b>";
-                curr_cell.style.color= "rgb(0,109,176)";
-                table_head.appendChild(curr_cell);   
-            }
-            header.appendChild(table_head);
-            
-            return header;
-        }
         
-        // Return html text cell for placement in a row.
-        var text_cell = function(text) {
-            var text_cell = document.createElement('td');
-            text_cell.innerHTML = text;
+        var stacked_bar = function(txn_list) {
+            var bar_div = document.createElement('div');
+            bar_div.id = 'bar_div';
+            document.body.appendChild(bar_div);
             
-            return text_cell;
-        }
-        
-        var amt_text_cell = function(amt) {
-            var amt_cell = document.createElement('td');
-            amt_cell.innerHTML = amt;
-            amt_cell.style.textAlign = "center";
-            if (parseFloat(amt) < 0) {
-                amt_cell.style.color = "rgb(128, 0, 0)";
-            }   else {
-                amt_cell.style.color = "rgb(0, 128, 0)";
-            }
-            return amt_cell;
-        }
-        
-        var send_txn = function(txn_json) {
-            $.ajax({
-                type: "POST",
-                url: "/mod_expenses",
-                dataType: "text",
-                data: txn_json,
-                success: function (data) {
-                    // For now don't go anywhere if it works.
-                    // Should really remove row and redraw table.
-                    // window.location.replace("/expenses");
-                    console.log(data);
-                    console.log('Success');
-                },
-                error: function (xhr, status, error) {
-                    console.log(xhr.responseText);
-                    // alert(error);
-                    // window.location.replace("/");
-                }
-            });
-        }
-        
-        // Make the classif button. classif is a param.
-        var ctype_button = function(txn, txn_type) {
-            var btn = document.createElement("BUTTON"); // Create a <button> element
+            labels = ["Income", "Essential", "Food", "Fun"];
+            values = [0, 0, 0, 0];
             
-            txn['txn_type'] = txn_type;
-            txn_json = JSON.stringify(txn);
-            
-            btn.innerHTML=txn_type;
-            btn.id = txn_type;
-            btn.value = txn_json;
-            
-            // When the button is clicked, send the dict to be put.
-            btn.onclick = function() { send_txn(this.value); }
-            
-            return btn;
-        }
-        
-        // Cell with buttons to select charge type.
-        var ctype_cell = function(date, desc, amt) {
-            var ctype_cell = document.createElement('td');
-            txn = {}
-            txn['date'] = date;
-            txn['desc'] = desc;
-            txn['amt'] = amt;
-            
-            ctype_cell.appendChild(ctype_button(txn, 'Essential'));
-            ctype_cell.appendChild(ctype_button(txn, 'Food'));
-            ctype_cell.appendChild(ctype_button(txn, 'Fun'));
-            ctype_cell.appendChild(ctype_button(txn, 'Income'));
-            ctype_cell.appendChild(ctype_button(txn, 'Transfer'));
-            ctype_cell.appendChild(ctype_button(txn, 'Other'));
-            ctype_cell.appendChild(ctype_button(txn, 'Remove'));
-            
-            return ctype_cell;
-        }
-        
-        // Return html row for placement in a table.
-        var create_row = function(date, desc, amt, txn_type) {
-            var row = document.createElement('tr');
-            row.appendChild(text_cell(date));
-            row.appendChild(text_cell(desc));
-            row.appendChild(amt_text_cell(amt));
-            row.appendChild(text_cell(txn_type));
-            row.appendChild(ctype_cell(date, desc, amt));
-            
-            return row; 
-        }
-
-        var txn_table = function(txn_list) {
-            var tbl = document.createElement('table');
-            tbl.id='theTable';
-            tbl.setAttribute('border', '1');
-            tbl.cellPadding = "3";
-            tbl.cellSpacing = "3";
-            tbl.appendChild(create_header());
-
             for (txn in txn_list) {
-                tbl.appendChild(
-                    create_row(txn_list[txn].date, txn_list[txn].desc, 
-                    txn_list[txn].amount, txn_list[txn].txn_type));
+                txn_type = txn_list[txn].txn_type;
+                amt = txn_list[txn].amount;
+                
+                // Match txn_type to label.
+                label_index = labels.indexOf(txn_type);
+                if (label_index != -1) {
+                    if (label_index == 0) {
+                        console.log('income' + Math.abs(parseFloat(amt)));
+                    }
+                    values[label_index] += Math.abs(parseFloat(amt));
+                }
             }
-          
-            return tbl;
+            
+            var income = {
+                x: ['Income'],
+                y: [values[0]],
+                name: 'Income',
+                type: 'bar'
+            };
+                
+            var essentials = {
+                x: ['Expenses'],
+                y: [values[1]],
+                
+                name: 'Essentials',
+                type: 'bar'
+            };
+            
+            var food = {
+                x: ['Expenses'],
+                y: [values[2]],
+                name: 'Food',
+                type: 'bar'
+            };
+            
+            var fun = {
+                x: ['Expenses'],
+                y: [values[3]],
+                name: 'Fun',
+                type: 'bar'
+            };
+
+            var data = [income, essentials, food, fun];
+            // var data = [income];
+
+            var layout = {
+                title: 'Income vs. Expenses',
+                barmode: 'stack',
+            };
+
+            Plotly.newPlot('bar_div', data, layout);
+        }
+        
+        var date_picker = function() {
+            var start_date = document.createElement('input');
+            start_date.id = 'datepicker';
+            document.body.appendChild(start_date);
         }
 
         window.onload = function() {
             var json_txn_list = {{db_txns|safe}};
             var length = {{length|safe}};
-            
             var txn_list = json_txn_list.txns;
-            
-            console.log('length: ' + length);
+
+            date_picker();
             pie_chart(txn_list);
-            document.body.appendChild(txn_table(txn_list));
+            stacked_bar(txn_list);
+            document.body.appendChild(create_txn_table(txn_list));
         }
     </script>
 </head>
