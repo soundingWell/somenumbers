@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+    <script type="text/javascript">
+        window.onload = function() {
+            var txns_deleted = {{deleted|safe}};
+            document.body.innerHTML=txns_deleted + ' transactions deleted.';
+        }
+    </script>
+</head>
+</html>

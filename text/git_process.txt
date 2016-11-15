@@ -1,0 +1,4 @@
+1. Modify some files. 
+2. git add those files. 
+3. git commit -m "some update"
+4  git push -u origin master.
