@@ -1,1 +1,4 @@
 1) If you can't find a resource, make sure to add it to app.yaml
+
+2) If you need to kill a process
+ lsof -P | grep ':8080' | awk '{print $2}' | xargs kill -9

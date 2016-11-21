@@ -18,7 +18,7 @@ handlers:
 
 - url: /.*
   script: python/main.py
-  # login: admin
+  login: required
   
 #- url: /expenses
 #  script: python/main.py
