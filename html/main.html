@@ -3,8 +3,18 @@
 <html>
 <head>
     <link rel="stylesheet" type="text/css" href="css/header.css">
+    <link rel="stylesheet" type="text/css" href="css/plot.css">
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+</head>
+<body>
+    <div id="page_header">
+    <button type="button" id="balance_btn" class="header_button">Balance</button>
+    <button type="button" id="adj_exp_btn" class="header_button">Adjust Expenses</button>
+    <button type="button" id="view_btn" class="header_button">View Expenses</button>
+    <button type="button" id="clear_btn" class="header_button">Clear Expenses</button>
+    </div>
+    <script src="js/header.js"></script>
     <script type="text/javascript">
         // [Date][Description][Amount]
         // Returns an html table_header object.
@@ -140,7 +150,7 @@
             bar_graph['type'] = 'bar';
             data.push(bar_graph);
             var layout = {
-                title: 'Balance'
+                title: 'Checking + Savings Balance'
             };
             Plotly.newPlot('plot_div', data, layout);
         }
@@ -156,17 +166,7 @@
             document.body.appendChild(txn_table(savings));
             document.body.appendChild(txn_table(checking));
             document.body.appendChild(txn_table(credit));
-            
         }
     </script>
-</head>
-<body>
-    <div id="page_header">
-    <button type="button" id="balance_btn" class="round_button">Balance</button>
-    <button type="button" id="adj_exp_btn" class="round_button">Adjust Expenses</button>
-    <button type="button" id="view_btn" class="round_button">View Expenses</button>
-    <button type="button" id="clear_btn" class="round_button">Clear Expenses</button>
-    </div>
-    <script src="js/header.js"></script>
 </body>
 </html>

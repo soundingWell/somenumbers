@@ -2,24 +2,77 @@
 
 <html>
 <head>
-    <link rel="stylesheet" type="text/css" href="css/unentered_table.css">
     <link rel="stylesheet" type="text/css" href="css/header.css">
+    <link rel="stylesheet" type="text/css" href="css/plot.css">
+    <link rel="stylesheet" type="text/css" href="css/unentered_table.css">
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
     <script src="js/table_helper.js"></script>
-    <script>
-    $( function() {
-        $( "#datepicker" ).datepicker();
-    } );
-    </script>
+</head>
+<body>
+    <div id="page_header">
+    <button type="button" id="balance_btn" class="header_button">Balance</button>
+    <button type="button" id="adj_exp_btn" class="header_button">Adjust Expenses</button>
+    <button type="button" id="view_btn" class="header_button">View Expenses</button>
+    <button type="button" id="clear_btn" class="header_button">Clear Expenses</button>
+    </div>
+    <script src="js/header.js"></script>
+    <p></p>
+    <p>Start Date: <input type="text" id="start_date"> End Date: <input type="text" id="end_date">
+    <button type="button" id="recalculate" class="recalculate"> Recalculate</button>
+    </p>
+    <div id="expense_breakdown_div"></div>
     <script type="text/javascript">
     
-        var pie_chart = function(txn_list) {
-            var plot_div = document.createElement('div');
-            plot_div.id = 'plot_div';
-            document.body.appendChild(plot_div);
+        $( function() {
+            $( "#start_date").datepicker();
+        });
+        $( function() {
+            $( "#end_date").datepicker();
+        });
+    
+        $( "#recalculate" ).click(function() {
+            var start_date = $("#start_date").val();
+            var end_date = $("#end_date").val();
+            if (start_date == "" && end_date == "") {
+                return;
+            } else {
+                if (start_date == "") {
+                    start_date = 0;
+                } else {
+                    start_date = parseInt(translate_date(start_date));
+                }
+                if (end_date == "") {
+                    end_date = 0;
+                } else {
+                    end_date = parseInt(translate_date(end_date));
+                }
+                $("#expense_breakdown_div").slideUp();
+                expense_breakdown(start_date=start_date, end_date=end_date);
+                $("#expense_breakdown_div").slideDown();
+            }
+        });
+        
+        // 11/23/2016 ->20161123
+        var translate_date = function(date) {
+            var month = date.slice(0, 2);
+            var day = date.slice(3, 5);
+            var year = date.slice(6, 10);
+            return year + month + day;
+        }
+    
+        var expense_breakdown = function(start_date=0, end_date=0) {
+            var exp_div = document.getElementById("expense_breakdown_div");
+            
+            while (exp_div.firstChild) {
+                exp_div.removeChild(exp_div.firstChild);
+            }  
+            
+            var json_txn_list = {{db_txns|safe}};
+            var txn_list = json_txn_list.txns;
         
             data = [];
             pie_graph = {};
@@ -29,6 +82,20 @@
 
             // Loop through txns and pie chart main expense types.
             for (txn in txn_list) {
+                txn_date = txn_list[txn].date;
+
+                if (start_date != 0) {
+                    if (txn_date < start_date) {
+                        continue;
+                    }
+                }
+                
+                if (end_date != 0) {
+                    if (txn_date > end_date) {
+                        break;
+                    }
+                }
+                
                 txn_type = txn_list[txn].txn_type;
                 amt = txn_list[txn].amount;
 
@@ -50,10 +117,10 @@
                 width: 500,
             };
             
-            Plotly.newPlot('plot_div', data, layout);
+            Plotly.newPlot('expense_breakdown_div', data, layout);
         }
         
-        var stacked_bar = function(txn_list) {
+        var income_vs_expenses = function(txn_list) {         
             var bar_div = document.createElement('div');
             bar_div.id = 'bar_div';
             document.body.appendChild(bar_div);
@@ -62,6 +129,15 @@
             values = [0, 0, 0, 0];
             
             for (txn in txn_list) {
+                txn_date = txn_list[txn].date;
+                /*
+                if (txn_date < start_date) {
+                    continue;
+                }
+                if (txn_date > end_date) {
+                    break;
+                }*/
+                
                 txn_type = txn_list[txn].txn_type;
                 amt = txn_list[txn].amount;
                 
@@ -120,26 +196,15 @@
             start_date.id = 'datepicker';
             document.body.appendChild(start_date);
         }
+        
 
         window.onload = function() {
+            // income_vs_expenses(txn_list);
+            expense_breakdown();
             var json_txn_list = {{db_txns|safe}};
-            var length = {{length|safe}};
             var txn_list = json_txn_list.txns;
-
-            date_picker();
-            pie_chart(txn_list);
-            stacked_bar(txn_list);
             document.body.appendChild(create_txn_table(txn_list));
         }
     </script>
-</head>
-<body>
-    <div id="page_header">
-    <button type="button" id="balance_btn" class="round_button">Balance</button>
-    <button type="button" id="adj_exp_btn" class="round_button">Adjust Expenses</button>
-    <button type="button" id="view_btn" class="round_button">View Expenses</button>
-    <button type="button" id="clear_btn" class="round_button">Clear Expenses</button>
-    </div>
-    <script src="js/header.js"></script>
 </body>
 </html>

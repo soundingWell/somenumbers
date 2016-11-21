@@ -17,7 +17,7 @@ from transaction_db import make_key
 import transaction_list
 
 
-SAVINGS_FILE = 'statements/savings/Chase0256_Activity_20161111.CSV'
+SAVINGS_FILE = 'statements/savings/Chase0256_Activity_20161120.CSV'
 CHECKING_FILE = 'statements/checking/Chase5851_Activity_20161111.CSV'
 CREDIT_FILE = 'statements/card/Chase9147_Activity_20161106.CSV'
 
