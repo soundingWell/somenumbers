@@ -18,8 +18,8 @@ import transaction_list
 
 
 SAVINGS_FILE = 'statements/savings/Chase0256_Activity_20161120.CSV'
-CHECKING_FILE = 'statements/checking/Chase5851_Activity_20161111.CSV'
-CREDIT_FILE = 'statements/card/Chase9147_Activity_20161106.CSV'
+CHECKING_FILE = 'statements/checking/Chase5851_Activity_20161121.CSV'
+CREDIT_FILE = 'statements/card/Chase9147_Activity_20161121.CSV'
 
 # Returns savings, checking, credit txn lists.
 def get_txn_lists():
@@ -45,6 +45,22 @@ def add_txn_type_to_list(txn_list):
 # Deletes all transactions from the database.
 # Reports to the page how many transactions it deleted.
 class DeleteAllHandler(webapp.RequestHandler):
+    
+    def post(self):
+        db_txns = TransactionDB.query()
+        
+        deleted = 0
+        for db in db_txns:
+            db.key.delete()
+            deleted += 1
+            
+        template_vales = {
+            'deleted': deleted
+        }
+        
+        path = 'html/delete_all.html'
+        self.response.out.write(template.render(path, template_vales))
+        
     
     def get(self):
         db_txns = TransactionDB.query()
@@ -138,7 +154,6 @@ class MainPage(webapp.RequestHandler):
         path = 'html/main.html'
         self.response.out.write(template.render(path, template_values))    
     
-
 application = webapp.WSGIApplication([('/', MainPage),
                                       ('/expenses', ExpensesHandler),
                                       ('/mod_expenses', ModExpensesHandler),

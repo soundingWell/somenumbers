@@ -87,8 +87,6 @@ class TransactionList(object):
       
 def read_first_line(list_of_transactions):
     top_line = list_of_transactions[0]
-    # words_in_line_arr = top_line
-
     list_of_transactions.remove(top_line)   
 
 

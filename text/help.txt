@@ -2,3 +2,8 @@
 
 2) If you need to kill a process
  lsof -P | grep ':8080' | awk '{print $2}' | xargs kill -9
+ 
+3) If you want to add a new classification:
+Main thing is to add a button in table_helper.js
+Then just go to expenses and follow pattern. 
+labels, value, data.

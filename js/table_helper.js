@@ -57,8 +57,9 @@ function create_txn_type_cell(date, desc, amt) {
     txn_type_cell.appendChild(create_txn_type_button(txn, 'Fun'));
     txn_type_cell.appendChild(create_txn_type_button(txn, 'Income'));
     txn_type_cell.appendChild(create_txn_type_button(txn, 'Transfer'));
+    txn_type_cell.appendChild(create_txn_type_button(txn, 'Rent'));
+    txn_type_cell.appendChild(create_txn_type_button(txn, 'Car Insurance'));
     txn_type_cell.appendChild(create_txn_type_button(txn, 'Other'));
-    txn_type_cell.appendChild(create_txn_type_button(txn, 'Remove'));
             
     return txn_type_cell;
 }
