@@ -62,16 +62,9 @@ class DeleteAllHandler(webapp.RequestHandler):
         self.response.out.write(template.render(path, template_vales))
         
     
-    def get(self):
-        db_txns = TransactionDB.query()
-        
-        deleted = 0
-        for db in db_txns:
-            db.key.delete()
-            deleted += 1
-            
+    def get(self):            
         template_vales = {
-            'deleted': deleted
+            'deleted': 0
         }
         
         path = 'html/delete_all.html'

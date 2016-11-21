@@ -2,11 +2,45 @@
 
 <html>
 <head>
+    <title>Delete Data</title>
+    <link rel="shortcut icon" href="resources/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="resources/favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" type="text/css" href="css/header.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script> 
+</head>
+
+<body>
+    <div id="page_header">
+        <button type="button" id="balance_btn" class="header_button">Balance</button>
+        <button type="button" id="adj_exp_btn" class="header_button">Add Expenses</button>
+        <button type="button" id="view_btn" class="header_button">View Expenses</button>
+        <button type="button" id="clear_btn" class="header_button">Clear Expenses</button>
+    </div>
+    <script src="js/header.js"></script>
+    <p></p>
+    <button type="button" id="delete_btn">Delete Data</button>
     <script type="text/javascript">
-        window.onload = function() {
-            var txns_deleted = {{deleted|safe}};
+    window.onload = function() {
+        var txns_deleted = {{deleted|safe}};
+        if (txns_deleted > 0) {
             document.body.innerHTML=txns_deleted + ' transactions deleted.';
         }
-    </script>
-</head>
+    }
+
+    $("#delete_btn").click(function() {
+        $.ajax({
+        type: "POST",
+        url: "/delete_all",
+        dataType: "text",
+        success: function (data) {
+            window.console.log('Success');
+        },
+        error: function (xhr, status, error) {
+            window.console.log(xhr.responseText);
+        }
+    })});
+
+</script>
+</body>
+
 </html>

@@ -8,6 +8,9 @@ handlers:
 
 - url: /css
   static_dir: css
+  
+- url: /resources
+  static_dir: resources
 
 - url: /js
   static_dir: js
@@ -19,7 +22,3 @@ handlers:
 - url: /.*
   script: python/main.py
   login: required
-  
-#- url: /expenses
-#  script: python/main.py
-  # login: admin

@@ -2,6 +2,9 @@
 
 <html>
 <head>
+    <title>View Expenses</title>
+    <link rel="shortcut icon" href="resources/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="resources/favicon.ico" type="image/x-icon">
     <link rel="stylesheet" type="text/css" href="css/header.css">
     <link rel="stylesheet" type="text/css" href="css/plot.css">
     <link rel="stylesheet" type="text/css" href="css/unentered_table.css">
@@ -37,7 +40,7 @@
             $( "#end_date").datepicker();
         });
     
-        $( "#recalculate" ).click(function() {
+        $("#recalculate").click(function() {
             var start_date = $("#start_date").val();
             var end_date = $("#end_date").val();
             if (start_date == "" && end_date == "") {

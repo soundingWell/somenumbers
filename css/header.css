@@ -13,8 +13,16 @@ p {
   z-index: 1000;
 }
 
+#wolf_img {
+    /*height: 100%;
+    
+    width: 20%;*/
+  display:block;
+    
+}
+
 .header_button {
-  width: 24%;
+  width: 19%;
   height: 100%;
   background-color: rgb(197,199,207);
   transition-duration: 0.1s;
