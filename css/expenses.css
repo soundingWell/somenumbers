@@ -1,0 +1,11 @@
+#recalculate {
+  border-radius: 172px;
+  background-color: rgb(44, 62, 80);
+  color: white;
+  border-width: 0px;
+  height: 100%;
+}
+
+body {
+    background-color: rgb(236, 240, 241);
+}

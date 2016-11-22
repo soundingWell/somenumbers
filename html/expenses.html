@@ -7,6 +7,7 @@
     <link rel="icon" href="resources/favicon.ico" type="image/x-icon">
     <link rel="stylesheet" type="text/css" href="css/header.css">
     <link rel="stylesheet" type="text/css" href="css/plot.css">
+    <link rel="stylesheet" type="text/css" href="css/expenses.css">
     <link rel="stylesheet" type="text/css" href="css/unentered_table.css">
     <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
@@ -25,7 +26,7 @@
     <script src="js/header.js"></script>
     <p></p>
     <p>Start Date: <input type="text" id="start_date"> End Date: <input type="text" id="end_date">
-    <button type="button" id="recalculate" class="recalculate"> Recalculate</button>
+    <button type="button" id="recalculate" class="recalculate">Recalculate</button>
     </p>
     <div id="plots">
     <div id="income_vs_expenses_div"></div>
@@ -144,6 +145,8 @@
                 title: ('Expenses By Type from ' + start_date + ' to ' + end_date),
                 height: 400,
                 width: 500,
+                paper_bgcolor: '#ecf0f1',
+                plot_bgcolor: '#ecf0f1',
             };
             
             Plotly.newPlot('expense_breakdown_div', data, layout);
@@ -240,6 +243,8 @@
             var layout = {
                 title: ('Income vs. Expenses from ' + start_date + ' to ' + end_date),
                 barmode: 'stack',
+                paper_bgcolor: '#ecf0f1',
+                plot_bgcolor: '#ecf0f1',
             };
 
             Plotly.newPlot('income_vs_expenses_div', data, layout);
@@ -253,7 +258,6 @@
         
         window.onload = function() {
             income_vs_expenses();
-            // expense_breakdown();
             var json_txn_list = {{db_txns|safe}};
             var txn_list = json_txn_list.txns;
             document.body.appendChild(create_txn_table(txn_list));

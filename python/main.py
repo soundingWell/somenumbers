@@ -22,10 +22,10 @@ CHECKING_FILE = 'statements/checking/Chase5851_Activity_20161121.CSV'
 CREDIT_FILE = 'statements/card/Chase9147_Activity_20161121.CSV'
 
 # Returns savings, checking, credit txn lists.
-def get_txn_lists():
-    savings_txn_list = transaction_list.txn_list_from_csv(SAVINGS_FILE)
-    checking_txn_list = transaction_list.txn_list_from_csv(CHECKING_FILE)
-    credit_txn_list = transaction_list.txn_list_from_csv(CREDIT_FILE)
+def get_txn_lists(desc_dates=False):
+    savings_txn_list = transaction_list.txn_list_from_csv(SAVINGS_FILE, desc_dates)
+    checking_txn_list = transaction_list.txn_list_from_csv(CHECKING_FILE, desc_dates)
+    credit_txn_list = transaction_list.txn_list_from_csv(CREDIT_FILE, desc_dates)
 
     return savings_txn_list, checking_txn_list, credit_txn_list
 
@@ -115,7 +115,7 @@ class ModExpensesHandler(webapp.RequestHandler):
         
     # Read db, send list of entries in the db. Allow user to change txn_type
     def get(self):
-        savings_txn_list, checking_txn_list, credit_txn_list = get_txn_lists()
+        savings_txn_list, checking_txn_list, credit_txn_list = get_txn_lists(desc_dates=True)
         add_txn_type_to_list(savings_txn_list)
         add_txn_type_to_list(checking_txn_list)
         add_txn_type_to_list(credit_txn_list)

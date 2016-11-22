@@ -37,7 +37,7 @@ class TransactionList(object):
         self.txns=tl
     
     # tlr = transaction_list_raw
-    def init_from_tlr(self, tlr):
+    def init_from_tlr(self, tlr, desc_dates=False):
         self.total= 0
         self.txns = []
         
@@ -59,17 +59,30 @@ class TransactionList(object):
         for charge in tlr:
             # Charge is an arr with ['10/23/17', 'desript', '12399']
             amount = float(charge[AMT])
-            
-            # Credit has no balance.
-            if credit:
-                self.txns.insert(0, Transaction(date=date_to_int(charge[DATE]), 
-                                                desc=charge[DESC], 
-                                                amount=amount))
+
+            # Newest txn on top.           
+            if desc_dates:
+                # Credit has no balance, so no balance input.
+                if credit:
+                    self.txns.append(Transaction(date=date_to_int(charge[DATE]), 
+                                                 desc=charge[DESC], 
+                                                 amount=amount))
+                else:
+                    self.txns.append(Transaction(date=date_to_int(charge[DATE]), 
+                                                 desc=charge[DESC], 
+                                                 amount=amount,
+                                                 balance=charge[BALANCE]))
             else:
-                self.txns.insert(0, Transaction(date=date_to_int(charge[DATE]), 
-                                                desc=charge[DESC], 
-                                                amount=amount,
-                                                balance=charge[BALANCE]))
+                if credit:
+                    self.txns.insert(0, Transaction(date=date_to_int(charge[DATE]), 
+                                                    desc=charge[DESC], 
+                                                    amount=amount))
+                else:
+                    self.txns.insert(0, Transaction(date=date_to_int(charge[DATE]), 
+                                                    desc=charge[DESC], 
+                                                    amount=amount,
+                                                    balance=charge[BALANCE]))
+                
             self.total += amount
             
     def get_txns_by_class(self, txn_class):
@@ -90,16 +103,16 @@ def read_first_line(list_of_transactions):
     list_of_transactions.remove(top_line)   
 
 
-# Returns a TransactionList
-def txn_list_from_csv(csv_file):
+# Returns a TransactionList. top_down
+def txn_list_from_csv(csv_file, desc_dates=False):
     transaction_list_raw = []
     with open(csv_file, 'rb') as csvfile:
-        statemnt = csv.reader(csvfile, delimiter=',', quotechar='|')
-        for row in statemnt:
+        statement = csv.reader(csvfile, delimiter=',', quotechar='|')
+        for row in statement:
             transaction_list_raw.append(row)
 
     read_first_line(transaction_list_raw)
     txn_list = TransactionList()
-    txn_list.init_from_tlr(transaction_list_raw)
+    txn_list.init_from_tlr(transaction_list_raw, desc_dates)
     return txn_list       
     

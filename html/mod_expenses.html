@@ -6,31 +6,59 @@
     <link rel="shortcut icon" href="resources/favicon.ico" type="image/x-icon">
     <link rel="icon" href="resources/favicon.ico" type="image/x-icon">
     <link rel="stylesheet" type="text/css" href="css/header.css">
+    <link rel="stylesheet" type="text/css" href="css/mod_expenses.css">
     <link rel="stylesheet" type="text/css" href="css/plot.css">
     <link rel="stylesheet" type="text/css" href="css/unentered_table.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+    <script src="js/header.js"></script>
     <script src="js/table_helper.js"></script>
+</head>
+<body>
     <script type="text/javascript">
+        $(document).ready(function() {
+            var CURRENT_TABLE = "";
+            $("#credit_button").click(function() {
+                $("#credit_table").insertAfter("#table_selector");
+            });
+            $("#checking_button").click(function() {
+                $("#checking_table").insertAfter("#table_selector");
+            });
+            $("#savings_button").click(function() {
+                $("#savings_table").insertAfter("#table_selector");
+            });
+        });
+        
         window.onload = function() {
             var savings = {{savings|safe}};
             var checking = {{checking|safe}};
             var credit = {{credit|safe}};
 
-            document.body.appendChild(create_txn_table(savings.txns));
-            document.body.appendChild(create_txn_table(checking.txns));
-            document.body.appendChild(create_txn_table(credit.txns));
+            var savings_table = create_txn_table(savings.txns);
+            savings_table.id = "savings_table";
+            var checking_table = create_txn_table(checking.txns);
+            checking_table.id = "checking_table";
+            var credit_table = create_txn_table(credit.txns);
+            credit_table.id = "credit_table";
+            
+            CURRENT_TABLE = "#savings_table";
+            document.body.appendChild(savings_table);
+            document.body.appendChild(checking_table);
+            document.body.appendChild(credit_table);
         }
     </script>
-</head>
 
-<body>
-<div id="page_header">
-    <button type="button" id="balance_btn" class="header_button">Balance</button>
-    <button type="button" id="adj_exp_btn" class="header_button">Add Expenses</button>
-    <button type="button" id="view_btn" class="header_button">View Expenses</button>
-    <button type="button" id="clear_btn" class="header_button">Clear Expenses</button>
+    <div id="page_header">
+        <button type="button" id="balance_btn" class="header_button">Balance</button>
+        <button type="button" id="adj_exp_btn" class="header_button">Add Expenses</button>
+        <button type="button" id="view_btn" class="header_button">View Expenses</button>
+        <button type="button" id="clear_btn" class="header_button">Clear Expenses</button>
     </div>
     <p></p>
-    <script src="js/header.js"></script>
+    <div id="table_selector">
+        <button type="button" id="savings_button">Savings</button>
+        <button type="button" id="checking_button">Checking</button>
+        <button type="button" id="credit_button">Credit</button>
+    </div>
+    
 </body>
 </html>

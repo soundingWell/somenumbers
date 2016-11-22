@@ -72,7 +72,7 @@ function create_header(categories) {
     for (var i = 0; i < categories.length; i++) {
         var curr_cell = document.createElement('td');
         curr_cell.innerHTML= "<b>" + categories[i] + "</b>";
-        curr_cell.style.color= "rgb(0,109,176)";
+        curr_cell.style.color= "rgb(54, 69, 79)";
         table_head.appendChild(curr_cell);   
     }
 
