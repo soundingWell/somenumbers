@@ -1,3 +1,28 @@
 body {
     background-color: rgb(236, 240, 241);  /* cloud grey */
 }
+
+#table_selector_div {
+  height: 40px;  
+}
+
+.txn_type_btn {
+  border-radius: 720px;
+  width: 10%;
+  color: white;
+  border-width: 0px;
+  height: 100%;
+}
+
+#checking_button {
+  background-color: rgb(22, 160, 133);  /*turquoise*/
+}
+
+#savings_button {
+  background-color: rgb(211, 84, 0);  /*orange*/
+}
+
+#credit_button {
+  background-color: rgb(142, 68, 173);  /*purple*/
+    
+}

@@ -23,14 +23,15 @@
     <button type="button" id="view_btn" class="header_button">View Expenses</button>
     <button type="button" id="clear_btn" class="header_button">Clear Expenses</button>
     </div>
+    <p></p><p></p><p></p>
     <script src="js/header.js"></script>
-    <p></p>
-    <p>Start Date: <input type="text" id="start_date"> End Date: <input type="text" id="end_date">
+    
+    <div id="dates_div"> Start Date: <input type="text" id="start_date"> End Date: <input type="text" id="end_date">
     <button type="button" id="recalculate" class="recalculate">Recalculate</button>
-    </p>
+    </div>
     <div id="plots">
     <div id="income_vs_expenses_div"></div>
-    <div id="expense_breakdown_div"></div>
+    <div id="spending_per_month_div"></div>
     </div>
     <script type="text/javascript">
     
@@ -60,7 +61,7 @@
                 }
                 $("#plots").fadeOut();
                 income_vs_expenses(start_date=start_date, end_date=end_date);
-                // expense_breakdown(start_date=start_date, end_date=end_date);
+                spending_per_month(start_date=start_date, end_date=end_date);
                 $("#plots").fadeIn();
             }
         });
@@ -87,69 +88,6 @@
             while (exp_div.firstChild) {
                 exp_div.removeChild(exp_div.firstChild);
             }  
-        }
-    
-        var expense_breakdown = function(start_date=0, end_date=0) {
-            remove_child_nodes("expense_breakdown_div");
-            var json_txn_list = {{db_txns|safe}};
-            var txn_list = json_txn_list.txns;
-        
-            data = [];
-            pie_graph = {};
-            
-            labels = ["Essential", "Food", "Fun"];
-            values = [0, 0, 0];
-
-            // Loop through txns and pie chart main expense types.
-            for (txn in txn_list) {
-                txn_date = txn_list[txn].date;
-
-                if (start_date != 0) {
-                    if (txn_date < start_date) {
-                        continue;
-                    }
-                }
-                if (end_date != 0) {
-                    if (txn_date > end_date) {
-                        break;
-                    }
-                }
-                
-                txn_type = txn_list[txn].txn_type;
-                amt = txn_list[txn].amount;
-
-                // Match txn_type to label.
-                label_index = labels.indexOf(txn_type);
-                if (label_index != -1) {
-                    values[label_index] += parseFloat(amt) * -1;
-                }
-            }
-            
-            pie_graph['values'] = values;
-            pie_graph['labels'] = labels;
-            pie_graph['type'] = 'pie';
-            data.push(pie_graph);
-            
-            if (start_date == 0) {
-                start_date = "Beginning";
-            } else {
-                start_date = date_int_to_str(start_date);
-            }
-            if (end_date == 0) {
-                end_date = "End";
-            } else {
-                end_date = date_int_to_str(end_date);
-            }
-            
-            var layout = {
-                title: ('Expenses By Type from ' + start_date + ' to ' + end_date),
-                height: 400,
-                width: 500,
-                paper_bgcolor: '#ecf0f1',
-                plot_bgcolor: '#ecf0f1',
-            };
-            
-            Plotly.newPlot('expense_breakdown_div', data, layout);
         }
         
         var income_vs_expenses = function(start_date=0, end_date=0) {   
@@ -250,6 +188,80 @@
             Plotly.newPlot('income_vs_expenses_div', data, layout);
         }
         
+        var spending_per_month = function(start_date=0, end_date=0) {
+            remove_child_nodes("spending_per_month_div");
+            
+            labels = ["Income", "Essential", "Food", "Fun", "Rent", "Car Insurance"];
+        
+            var json_txn_list = {{db_txns|safe}};
+            var txn_list = json_txn_list.txns;
+            
+            
+            var data = [];
+            var trace = {
+                x: [],
+                y: [],
+                type: 'scatter'
+            };
+            
+            for (var i = 0; i < labels.length; i++) {
+                data.push(trace);
+                data[i].name = labels[i];
+            }
+            
+            for (txn in txn_list) {
+                var txn_date = parseInt(txn_list[txn].date);
+
+                if (start_date != 0) {
+                    if (txn_date < start_date) {
+                        continue;
+                    }
+                }
+                if (end_date != 0) {
+                    if (txn_date > end_date) {
+                        break;
+                    }
+                }
+                
+                var txn_month = (txn_date / 100).toString();
+                
+                txn_type = txn_list[txn].txn_type;
+                amt = Math.abs(parseFloat(txn_list[txn].amount));
+                
+                // Match txn_type to label.
+                label_index = labels.indexOf(txn_type);
+                var curr_trace = data[label_index];
+                if (label_index != -1) {
+                    if (!txn_month in data[label_index].x) {
+                        curr_trace.x.push(txn_month);
+                        curr_trace.y[curr_trace.x.length - 1] = amt;
+                    } else {
+                        curr_trace.y[curr_trace.x.length - 1] += amt;
+                    }
+                }
+            }
+        
+            if (start_date == 0) {
+                start_date = "Beginning";
+            } else {
+                start_date = date_int_to_str(start_date);
+            }
+            if (end_date == 0) {
+                end_date = "End";
+            } else {
+                end_date = date_int_to_str(end_date);
+            }
+            var layout = {
+                title: ('Spending Per Month from ' + start_date + ' to ' + end_date),
+                paper_bgcolor: '#ecf0f1',
+                plot_bgcolor: '#ecf0f1',
+            };
+            
+            console.log(JSON.stringify(data));
+
+            Plotly.newPlot('spending_per_month_div', data, layout);
+        }
+        
         var date_picker = function() {
             var start_date = document.createElement('input');
             start_date.id = 'datepicker';
@@ -258,6 +270,7 @@
         
         window.onload = function() {
             income_vs_expenses();
+            spending_per_month();
             var json_txn_list = {{db_txns|safe}};
             var txn_list = json_txn_list.txns;
             document.body.appendChild(create_txn_table(txn_list));

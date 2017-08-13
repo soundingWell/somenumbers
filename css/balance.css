@@ -1,3 +1,7 @@
 body {
     background-color: rgb(236, 240, 241);  /* cloud grey */
 }
+
+thead {
+    color: rgb(44, 62, 80);
+}

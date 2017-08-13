@@ -1,4 +1,4 @@
-# This handles the transaction type that is store in the database.
+# This handles the transaction type that is stored in the database.
 from google.appengine.ext import ndb
 
 def make_key(date, desc, amt):

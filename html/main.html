@@ -20,19 +20,41 @@
     <button type="button" id="view_btn" class="header_button">View Expenses</button>
     <button type="button" id="clear_btn" class="header_button">Clear Expenses</button>
     </div>
+    <p></p>
     <script src="js/header.js"></script>
     <script type="text/javascript">
+        // The data for a plotly graph.
+        // The data is stored in a dictionary.
+        class Graph {
+            constructor() {
+                this.graph_data = {};
+                this.graph_data['x'] = []
+                this.graph_data['y'] = []
+                
+                // Currently hardcoded to a bar graph.
+                this.graph_data['type'] = 'bar';
+            }
+            AddXValue(date) {
+                this.graph_data['x'].push(date);
+            }
+            AddYValue(balance) {
+                this.graph_data['y'].push(balance);
+            }
+            GetData() {
+                return this.graph_data;
+            }
+        }
+    
         // [Date][Description][Amount]
         // Returns an html table_header object.
-        var create_header = function() {
-            var categories = ["Date", "Description", "Amount"];
+        var create_header = function(caption) {
+            var categories = ["Date", "Description", "Amount", "Balance", caption];
             var header = document.createElement('thead');
             var table_head = document.createElement('tr'); // Creating the row
           
             for (i = 0; i < categories.length; i++) {
                 var curr_cell = document.createElement('td');
                 curr_cell.innerHTML= "<b>" + categories[i] + "</b>";
-                curr_cell.style.color= "red";
                 table_head.appendChild(curr_cell);   
             }
             header.appendChild(table_head);
@@ -48,47 +70,57 @@
         }
         
         // Return html row for placement in a table.
-        var create_row = function(details, desc, amt) {
+        var create_row = function(details, desc, amt, balance) {
             var row = document.createElement('tr');
             row.appendChild(text_cell(details));
             row.appendChild(text_cell(desc));
             row.appendChild(text_cell(amt));
+            row.appendChild(text_cell(balance));
             return row; 
         }
 
-        var txn_table = function(json_txn_list) {
+        var txn_table = function(txn_list, caption) {
             var tbl = document.createElement('table');
             tbl.style.width='100%';
             tbl.setAttribute('border', '1');
             tbl.cellPadding = "3";
             tbl.cellSpacing = "3";
-            tbl.appendChild(create_header());
-          
-            var txn_list = json_txn_list.txns;
+            
+            tbl.appendChild(create_header(caption));
+
+            
             for (txn in txn_list) { //[{Dtls,Desc,Amt},{Dtls,Desc,Amt}]
+            console.log(String(txn_list[txn].balance));
                 tbl.appendChild(
                     create_row(txn_list[txn].date, txn_list[txn].desc, 
-                    txn_list[txn].amount));
+                    txn_list[txn].amount, txn_list[txn].balance));
             }
           
             return tbl;
         }
         
+        // Date comes in as yearMonthDay.
+        // Print as Month/Day/Year.
+        // 20170705 -> "07/05/2017.
         var date_to_string = function(date) {
             var str = "";
+            // Month.
             str = String((Math.floor(date / 100)) % 100);
             str += "/";
+            // Day.
             str += String(date % 100);
             str += "/";
+            // Year.
             str += String(Math.floor(date / 10000));
             return str;
         }
         
         // There could be n transactions on the same day. We just want the last.
-        var get_final_txn_at_date = function(arr, i, len, acc) {
-            start_date = arr[i].date;
-            while ((i + 1) < len) {
-                if (arr[i+1].date == start_date) {
+        var get_final_txn_at_date = function(txn_list, i) {
+            start_date = txn_list[i].date;
+            while ((i + 1) < txn_list.length) {
+                // Stop looping once iterator has reached next day.
+                if (txn_list[i + 1].date == start_date) {
                     i++;
                 } else {
                     break;
@@ -97,17 +129,12 @@
             return i;
         }
         
-        var plot_balance = function(savings, checking, credit, start_date, 
-                                    end_date) {
+        var plot_balance = function(savings, checking, start_date, end_date) {
             var plot_div = document.createElement('div');
             plot_div.id = 'plot_div';
             document.body.appendChild(plot_div);
             
-            // TODO turn these into a class.
-            x = [];
-            y = [];
-            data = [];
-            bar_graph = {};
+            var graph = new Graph();
             
             // TODO turn these into a class.
             var c = 0;
@@ -115,65 +142,65 @@
             var curr_s_bal = 0;
             var curr_c_bal = 0;
             var s_date = savings[0].date;
-            var c_date = savings[0].date;
+            var c_date = checking[0].date;
             var slen = savings.length;
             var clen = checking.length;
             
             while (c < clen || s < slen) {
                 while ((c < clen && (c_date <= s_date)) || 
-                (s == slen && c < clen)) {
+                        (s == slen && c < clen)) {
                     // Advance to end of day.
-                    c = get_final_txn_at_date(checking, c, clen, 'c');
+                    c = get_final_txn_at_date(checking, c);
                     
                     // If savings date is the same then advance that too.
                     if (c_date == s_date && s < slen) {
-                        s = get_final_txn_at_date(savings, s, slen, 's');
+                        s = get_final_txn_at_date(savings, s);
                         curr_s_bal = savings[s].balance;
                     }
                     
-                    x.push(date_to_string(c_date));
-                    y.push(Math.floor(checking[c].balance) + Math.floor(curr_s_bal));
+                    graph.AddXValue(date_to_string(c_date));
+                    graph.AddYValue(Math.floor(checking[c].balance) + 
+                                    Math.floor(curr_s_bal));
                     curr_c_bal = checking[c].balance;
                     c_date = checking[c].date;
                     c += 1;
                 }
                 
                 while ((s < slen && (s_date < c_date)) || 
-                (c == clen && s < slen)) {
+                    (c == clen && s < slen)) {
                     // Advance to end of that day.
                     s = get_final_txn_at_date(savings, s, slen, 's');
                     
-                    x.push(date_to_string(s_date));
-                    y.push(Math.floor(savings[s].balance) + Math.floor(curr_c_bal));
+                    graph.AddXValue(date_to_string(s_date));
+                    graph.AddYValue(Math.floor(savings[s].balance) + 
+                                    Math.floor(curr_c_bal));
                     curr_s_bal = savings[s].balance;
                     s_date = savings[s].date;
                     s += 1;
                 }
             }
-            
-            bar_graph['x'] = x;
-            bar_graph['y'] = y;
-            bar_graph['type'] = 'bar';
-            data.push(bar_graph);
+
             var layout = {
                 title: 'Checking + Savings Balance',
                 paper_bgcolor: '#ecf0f1',
                 plot_bgcolor: '#ecf0f1',
             };
-            Plotly.newPlot('plot_div', data, layout);
+            Plotly.newPlot('plot_div', [graph.GetData()], layout);
         }
     
         window.onload = function() {
             var savings = {{savings|safe}};
             var checking = {{checking|safe}};
             var credit = {{credit|safe}};
+            
+            // In the future these could be used to modify graph.
             var start_date = 0;
             var end_date = 0;
-            plot_balance(savings.txns, checking.txns, credit.txns, start_date, 
-                         end_date);
-            document.body.appendChild(txn_table(savings));
-            document.body.appendChild(txn_table(checking));
-            document.body.appendChild(txn_table(credit));
+
+            plot_balance(savings.txns, checking.txns, start_date, end_date);
+            document.body.appendChild(txn_table(savings.txns, 'Savings'));
+            document.body.appendChild(txn_table(checking.txns, 'Checking'));
+            document.body.appendChild(txn_table(credit.txns, 'Credit'));
         }
     </script>
 </body>

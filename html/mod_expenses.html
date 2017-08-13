@@ -18,13 +18,13 @@
         $(document).ready(function() {
             var CURRENT_TABLE = "";
             $("#credit_button").click(function() {
-                $("#credit_table").insertAfter("#table_selector");
+                $("#credit_table").insertAfter("#table_selector_div");
             });
             $("#checking_button").click(function() {
-                $("#checking_table").insertAfter("#table_selector");
+                $("#checking_table").insertAfter("#table_selector_div");
             });
             $("#savings_button").click(function() {
-                $("#savings_table").insertAfter("#table_selector");
+                $("#savings_table").insertAfter("#table_selector_div");
             });
         });
         
@@ -53,12 +53,11 @@
         <button type="button" id="view_btn" class="header_button">View Expenses</button>
         <button type="button" id="clear_btn" class="header_button">Clear Expenses</button>
     </div>
-    <p></p>
-    <div id="table_selector">
-        <button type="button" id="savings_button">Savings</button>
-        <button type="button" id="checking_button">Checking</button>
-        <button type="button" id="credit_button">Credit</button>
+    <p></p><p></p><p>
+    <div id="table_selector_div">
+        <button type="button" id="savings_button" class="txn_type_btn">Savings</button>
+        <button type="button" id="checking_button" class="txn_type_btn">Checking</button>
+        <button type="button" id="credit_button" class="txn_type_btn">Credit</button>
     </div>
-    
 </body>
 </html>

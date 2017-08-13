@@ -8,6 +8,10 @@ table {
   text-align: center;
 }
 
+thead {
+    color: rgb(44, 62, 80); 
+}
+
 table button {
     background-color: rgb(197,199,207);  /* Grey  */
     /*border-style: solid;*/

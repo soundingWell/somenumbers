@@ -17,16 +17,16 @@ from transaction_db import make_key
 import transaction_list
 
 
-SAVINGS_FILE = 'statements/savings/Chase0256_Activity_20161120.CSV'
-CHECKING_FILE = 'statements/checking/Chase5851_Activity_20161121.CSV'
-CREDIT_FILE = 'statements/card/Chase9147_Activity_20161121.CSV'
+SAVINGS_FILE = 'statements/savings/Chase0256_Activity_20170812.CSV'
+CHECKING_FILE = 'statements/checking/Chase5851_Activity_20170812.CSV'
+CREDIT_FILE = 'statements/card/Chase8595_Activity_20170812.CSV'
 
 # Returns savings, checking, credit txn lists.
 def get_txn_lists(desc_dates=False):
     savings_txn_list = transaction_list.txn_list_from_csv(SAVINGS_FILE, desc_dates)
     checking_txn_list = transaction_list.txn_list_from_csv(CHECKING_FILE, desc_dates)
     credit_txn_list = transaction_list.txn_list_from_csv(CREDIT_FILE, desc_dates)
-
+    print savings_txn_list
     return savings_txn_list, checking_txn_list, credit_txn_list
 
 # Look through a txn_list, compare it to the db, add txn_type from db. 
@@ -134,7 +134,7 @@ class MainPage(webapp.RequestHandler):
     
     def get(self):
         savings_txn_list, checking_txn_list, credit_txn_list = get_txn_lists()
-        
+        print 'hello'
         serialized_savings = savings_txn_list.toJSON()
         serialized_checking = checking_txn_list.toJSON()
         serialized_credit = credit_txn_list.toJSON()

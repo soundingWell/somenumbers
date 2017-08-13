@@ -6,6 +6,10 @@
   height: 100%;
 }
 
+#dates_div {
+  height: 30px;  
+}
+
 body {
     background-color: rgb(236, 240, 241);
 }

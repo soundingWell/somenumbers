@@ -1,7 +1,7 @@
 body { margin: 0; }
 
 p {
-    height: 20px;
+  height: 5px;
 }
 
 #page_header { 
@@ -9,7 +9,7 @@ p {
   position: fixed;
   top:0; left:0;
   width: 100%;
-  height: 40px;
+  height: 60px;
   z-index: 1000;
 }
 
@@ -24,13 +24,28 @@ p {
   color: white;
   transition-duration: 0.05s;
   border-width: 0px;
-  /*border-radius: 72px;*/
+  border-radius: 7px;
   border-style: solid;
   /*border-color: rgb(197, 199, 207);*/
 }
 
-.header_button:hover {
-    background-color: black;
+#balance_btn:hover {
+    background-color: rgb(211, 84, 0);  /* orange */
+    color: white;
+}
+
+#adj_exp_btn:hover {
+    background-color: rgb(22, 160, 133);  /* turqoise */
+    color: white;
+}
+
+#view_btn:hover {
+    background-color: rgb(142, 68, 173);  /* purple */
+    color: white;
+}
+
+#clear_btn:hover {
+    background-color: rgb(211, 84, 0);
     color: white;
 }
 
