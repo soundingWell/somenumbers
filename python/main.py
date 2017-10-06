@@ -8,6 +8,7 @@ from google.appengine.ext.webapp import template
 
 ### Basics ###
 import json
+import logging
 import sys
 sys.path.append('python/')
 
@@ -26,7 +27,7 @@ def get_txn_lists(desc_dates=False):
     savings_txn_list = transaction_list.txn_list_from_csv(SAVINGS_FILE, desc_dates)
     checking_txn_list = transaction_list.txn_list_from_csv(CHECKING_FILE, desc_dates)
     credit_txn_list = transaction_list.txn_list_from_csv(CREDIT_FILE, desc_dates)
-    print savings_txn_list
+    
     return savings_txn_list, checking_txn_list, credit_txn_list
 
 # Look through a txn_list, compare it to the db, add txn_type from db. 
@@ -38,14 +39,12 @@ def add_txn_type_to_list(txn_list):
 
         # If there is a match of this txn in the db.
         if db_txn:
-            print 'date: ' + str(db_txn.date)
-            print 'amt: ' + str(db_txn.amt)
             txn.txn_type = db_txn.txn_type
+
 
 # Deletes all transactions from the database.
 # Reports to the page how many transactions it deleted.
 class DeleteAllHandler(webapp.RequestHandler):
-    
     def post(self):
         db_txns = TransactionDB.query()
         
@@ -102,13 +101,13 @@ class ModExpensesHandler(webapp.RequestHandler):
         txn_json = self.request.body
         json_py = json.loads(txn_json)
         
+        # This should modify a txn, right now it overwrites.
         txn_db = TransactionDB(date=int(json_py['date']), 
                                desc=str(json_py['desc']), 
                                amt=float(json_py['amt']),  
                                txn_type=str(json_py['txn_type']))
         
         txn_key = make_key(json_py['date'], json_py['desc'], json_py['amt'])
-        print 'key: ' + txn_key
         txn_db.key = ndb.Key(TransactionDB, txn_key)
         txn_db.put()
             
@@ -128,13 +127,17 @@ class ModExpensesHandler(webapp.RequestHandler):
         
         path = 'html/mod_expenses.html'
         self.response.out.write(template.render(path, template_values)) 
-            
+    
+class StoreHandler(webapp.RequestHandler):
+    def get(self):    
+        transaction_list.store_txns_from_csv(SAVINGS_FILE)
+        self.response.out.write("Hello")
+           
 
 class MainPage(webapp.RequestHandler):
     
     def get(self):
         savings_txn_list, checking_txn_list, credit_txn_list = get_txn_lists()
-        print 'hello'
         serialized_savings = savings_txn_list.toJSON()
         serialized_checking = checking_txn_list.toJSON()
         serialized_credit = credit_txn_list.toJSON()
@@ -145,12 +148,16 @@ class MainPage(webapp.RequestHandler):
             'credit': serialized_credit
         }
         path = 'html/main.html'
-        self.response.out.write(template.render(path, template_values))    
+        self.response.out.write(template.render(path, template_values))  
+        
+
+
     
 application = webapp.WSGIApplication([('/', MainPage),
                                       ('/expenses', ExpensesHandler),
                                       ('/mod_expenses', ModExpensesHandler),
-                                      ('/delete_all', DeleteAllHandler)],
+                                      ('/delete_all', DeleteAllHandler),
+                                      ('/store', StoreHandler)],
                                        debug=True)
                                      
 

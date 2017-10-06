@@ -1,30 +1,30 @@
-Things to do 
+Existing features
 
-There are 2 broad categories:
-Charges and Balance. 
+===Balance Chart===
+Shows balance of (savings + checking) over time.
 
-1) Implement Balance fully.
-With balance we want to combine (savings + checking - charges since last payment)
-    a. Implement a date to int function so we can see most recent.
+TODO:
+- Subtract current credit card charges from the balance.
     
-DONEEEEEEEEEE
+===Modify Charges Page===
+Have page to modify transactions. On that page is a button to delete all. Data
+is retrieved from the db. New categorized charges are added to the db.
+
+TODO:
+- Remove the txn from the table once it's been typed.
 
 
-2) Implement txn_types Fully.
+===Database Work====
+- When should we store data?
+Better plan: When we read the list of transactions, add all transactions unless
+they already exist. Then "Modify Charges" will read from the db.
 
-    a. Need classifications for rent / cable / car_insurance as subclass
+- Optimization on that would be to read the data from db store into memory on
+first load. Use that instead of reading from db on every page load.
 
-3) Change "classification" to something shorter.
+- "Store" needs to not overwrite data. Otherwise we'll lose the txn_type.
 
-DONEEEEEEEEEEE
 
-changed to txn_type
-
-4) Have page to modify entries. On that page is a button to delete all.
-This page will have a table like expenses, but only list the entries already
-in the db.
-
-5) On expenses/ remove the txn from the table once it's been typed.
 
 
 

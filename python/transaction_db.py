@@ -1,6 +1,8 @@
 # This handles the transaction type that is stored in the database.
 from google.appengine.ext import ndb
 
+
+# Be sure to never put type in the key because that can change.
 def make_key(date, desc, amt):
     return str(date) + str(desc[:5]) + str(float(amt))
 
